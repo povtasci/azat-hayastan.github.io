@@ -4,4 +4,5 @@ module.exports = {
     subscription_based_signups: 'subscription_based_signups',
   },
   result: { success: 'success', failure: 'failure' },
+  is_phone_number: phone_number => /^[\d\+\-\(\) ]+$/.test(phone_number),
 };

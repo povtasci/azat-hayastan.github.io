@@ -19,15 +19,18 @@ const register_result = (dest_phone_number, message_created) =>
     return resolve();
   });
 
-const send_message = ({ client, dest_phone_number, message }) => {
-  const { our_message_sender } = config.phone_numbers;
+const send_message = ({ client, dest_phone_number, message, russian_or_american }) => {
+  const { our_message_sender, our_subscription_receiver } = config.phone_numbers;
+  const number =
+    (russian_or_american === 'russian' && our_subscription_receiver) ||
+    (russian_or_american === 'american' && our_message_sender);
   return client.messages
-    .create(our_message_sender, dest_phone_number, message)
+    .create(number, dest_phone_number, message)
     .then(register_result.bind(null, dest_phone_number))
     .catch(register_error.bind(null, dest_phone_number));
 };
 
-const send_to_all_subscription_based = (client, message) => {
+const send_to_all_subscription_based = (client, message, russian_or_american) => {
   return admin
     .database()
     .ref(db_paths.subscription_based_signups)
@@ -37,30 +40,46 @@ const send_to_all_subscription_based = (client, message) => {
       if (rows !== null) {
         for (const row of rows) {
           const { dest_phone_number } = row;
-          send_message({ client, dest_phone_number, message });
+          send_message({ client, dest_phone_number, message, russian_or_american });
         }
         return rows.length;
       } else return 0;
     });
 };
 
+const on_error = (request, response, error) =>
+  cors(request, response, () => {
+    response.end(JSON.stringify({ result: result.failure, reason: `Reason: ${error.message}` }));
+  });
+
 exports.send_mass_text = functions.https.onRequest((request, response) => {
   const { auth_id, auth_token } = config.plivo;
   const client = new plivo.Client(auth_id, auth_token);
-  const { dest_message } = request.body;
-  return send_to_all_subscription_based(client, dest_message)
-    .then(() =>
-      cors(request, response, () => {
-        response.send(JSON.stringify({ result: result.success, payload: 'Hello from Firebase!' }));
+  const { dest_message, russian_or_american, is_mass_text, direct_person } = request.body;
+  if (is_mass_text) {
+    return send_to_all_subscription_based(client, dest_message, russian_or_american)
+      .then(() =>
+        cors(request, response, () => {
+          return response.end(JSON.stringify({ result: result.success, payload: 'Mass texted' }));
+        })
+      )
+      .catch(on_error.bind(null, request, response));
+  } else {
+    return send_message({
+      client,
+      dest_phone_number: direct_person,
+      message: dest_message,
+      russian_or_american,
+    })
+      .then(() => {
+        return cors(request, response, () => {
+          return response.end(
+            JSON.stringify({ result: result.success, payload: 'Did send message to direct person' })
+          );
+        });
       })
-    )
-    .catch(error =>
-      cors(request, response, () => {
-        response.send(
-          JSON.stringify({ result: result.failure, reason: `Reason: ${error.message}` })
-        );
-      })
-    );
+      .catch(on_error.bind(null, request, response));
+  }
 });
 
 const is_valid_signup_message = text => {
