@@ -7,8 +7,14 @@ import { __DEV__, __APPLICATION__SECRETS__ } from './constants';
 import { is_phone_number } from './src-common';
 import LoginForm from './login-form';
 
+class ProfileControl extends React.Component {
+  render() {
+    return <p>hi</p>;
+  }
+}
+
 class App extends React.Component {
-  state = { error: null };
+  state = { error: null, authenticated: null };
 
   send_mass_text = async () => {
     const { value } = this._phone_number_input;
@@ -22,23 +28,34 @@ class App extends React.Component {
       this.setState(() => ({ error: new Error(`Your input was not a phone number`) }));
     }
   };
-  // <input type={'text'} ref={r => (this._phone_number_input = r)} />
-  // <input type={'text'} ref={r => (this._message_input = r)} />
-  // <input type={'button'} value={'Test Cloud'} onClick={this.send_mass_text} />
 
   do_login = e => {
-    e.preventDefault();
     console.log('foo bar');
   };
 
+  on_submit_signin = async () => {
+    return;
+  };
+
+  on_submit_signup = async () => {
+    return;
+  };
+
   render() {
-    const { error } = this.state;
+    const { error, authenticated } = this.state;
     return (
       <div className={styles.ApplicationContainer}>
         <div>
           <h3 className={styles.ApplicationContainer__Banner}>Login to control your messages</h3>
           {error ? <p className={styles.ErrorMessage}>Something wrong: {error.message}</p> : null}
-          <LoginForm on_submit={this.do_login} />
+          {authenticated === null ? (
+            <LoginForm
+              on_submit_signup={this.on_submit_signup}
+              on_submit_signin={this.on_submit_signin}
+            />
+          ) : (
+            <ProfileControl />
+          )}
         </div>
       </div>
     );

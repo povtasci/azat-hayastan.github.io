@@ -7,7 +7,14 @@ const SPACER_15_H = <div style={{ height: '15px', width: '100%' }} />;
 export const TABS = { signup: 'signup', signin: 'signin' };
 
 export default class FormEntry extends React.Component {
-  state = { error: null, signin_or_signup: TABS.signin };
+  state = {
+    error: null,
+    signin_or_signup: TABS.signup,
+    signin_phone_number: '',
+    signin_password: '',
+    signup_phone_number: '',
+    signup_password: '',
+  };
 
   make_content = () => {
     const { signin_or_signup } = this.state;
@@ -21,52 +28,125 @@ export default class FormEntry extends React.Component {
     }
   };
 
-  make_signup_form = () => {
-    return <p>hi</p>;
-  };
-
-  on_submit = e => {
-    e.preventDefault();
-    const { on_submit } = this.props;
-    const { value: user_name } = this._user_name;
-    const { value: password } = this._password;
-    on_submit({ user_name, password });
-  };
-
-  make_signin_form() {
+  make_signup_form() {
     return (
-      <form onSubmit={this.on_submit}>
+      <form onSubmit={this.on_submit.bind(this, TABS.signup)}>
         <fieldset className={styles.FieldsetContainer}>
           <section className={styles.FlexRow}>
-            <label>Username: </label>
+            <label>Phone number: </label>
             <input
-              ref={r => (this._user_name = r)}
+              onChange={e => this.setState({ signup_phone_number: e.target.value })}
+              value={this.state.signup_phone_number}
               type={'text'}
-              value={''}
-              placeholder={'user name'}
+              placeholder={'(+374)'}
             />
           </section>
           {SPACER_15_H}
           <section className={styles.FlexRow}>
             <label>Password: </label>
-            <input type={'password'} ref={r => (this._password = r)} placeholder={'password'} />
+            <input
+              onChange={e => this.setState({ signup_password: e.target.value })}
+              value={this.state.signup_password}
+              type={'password'}
+              placeholder={'password'}
+            />
+          </section>
+          {SPACER_15_H}
+          <section className={styles.FlexRow}>
+            <label>Receive news updates: </label>
+            <input
+              type={'checkbox'}
+              checked={true}
+              ref={r => (this._checkbox_receive_message = r)}
+            />
           </section>
           {SPACER_15_H}
           <div>
-            <input type={'submit'} value={'Sign in'} />
+            <input
+              type={'submit'}
+              className={styles.FieldsetContainer__ActionButton}
+              value={'Sign up'}
+            />
           </div>
         </fieldset>
       </form>
     );
   }
-  set_sign_in = () => {
-    console.log('set sign in ');
+
+  on_submit = async (tab, e) => {
+    e.preventDefault();
+    const { on_submit_signin, on_submit_signup } = this.props;
+    const {
+      signin_phone_number,
+      signin_password,
+      signup_phone_number,
+      signup_password,
+    } = this.state;
+
+    if (tab === TABS.signin) {
+      const result = await on_submit_signin({ signin_phone_number, signin_password });
+    } else if (tab === TABS.signup) {
+      const result = await on_submit_signup({ signup_phone_number, signup_password });
+    }
   };
+
+  make_signin_form() {
+    return (
+      <form onSubmit={this.on_submit.bind(this, TABS.signin)}>
+        <fieldset className={styles.FieldsetContainer}>
+          <section className={styles.FlexRow}>
+            <label>Phone number: </label>
+            <input
+              onChange={e => this.setState({ signin_phone_number: e.target.value })}
+              value={this.state.signin_phone_number}
+              type={'text'}
+              placeholder={'your phone number (+374)'}
+            />
+          </section>
+          {SPACER_15_H}
+          <section className={styles.FlexRow}>
+            <label>Password: </label>
+            <input
+              onChange={e => this.setState({ signin_password: e.target.value })}
+              value={this.state.signin_password}
+              type={'password'}
+              placeholder={'password'}
+            />
+          </section>
+          {SPACER_15_H}
+          <div>
+            <input
+              className={styles.FieldsetContainer__ActionButton}
+              type={'submit'}
+              value={'Sign in'}
+            />
+          </div>
+        </fieldset>
+      </form>
+    );
+  }
+
+  set_sign_in = () => {
+    this.setState(() => ({ signin_or_signup: TABS.signin }));
+  };
+
+  set_sign_up = () => {
+    this.setState(() => ({ signin_or_signup: TABS.signup }));
+  };
+
   render() {
     const { signin_or_signup } = this.state;
     return (
       <div>
         <section>
+          <input
+            className={`${
+              signin_or_signup === TABS.signup ? styles['FieldsetContainer__Signin--Selected'] : ''
+            }`}
+            type={'button'}
+            onClick={this.set_sign_up}
+            value={'Sign up for news'}
+          />
           <input
             className={`${
               signin_or_signup === TABS.signin ? styles['FieldsetContainer__Signin--Selected'] : ''
@@ -75,7 +155,6 @@ export default class FormEntry extends React.Component {
             onClick={this.set_sign_in}
             value={'Sign in to change preference'}
           />
-          <input type={'button'} value={'Sign up for news'} />
         </section>
         {this.make_content()}
       </div>
