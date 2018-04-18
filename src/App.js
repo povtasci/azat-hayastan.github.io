@@ -46,7 +46,12 @@ class App extends React.Component {
     return (
       <div className={styles.ApplicationContainer}>
         <div>
-          <h3 className={styles.ApplicationContainer__Banner}>Login to control your messages</h3>
+          <h3 className={styles.ApplicationContainer__Banner}>
+            <p>
+              Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ կապված բոլոր
+              կարևոր իրադարձությունների մասին։
+            </p>
+          </h3>
           {error ? <p className={styles.ErrorMessage}>Something wrong: {error.message}</p> : null}
           {authenticated === null ? (
             <LoginForm

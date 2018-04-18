@@ -138,10 +138,12 @@ export default class FormEntry extends React.Component {
     const { signin_or_signup } = this.state;
     return (
       <div>
-        <section>
+        <section className={styles.Fieldsetcontainer__ActionTabRow}>
           <input
             className={`${
-              signin_or_signup === TABS.signup ? styles['FieldsetContainer__Signin--Selected'] : ''
+              signin_or_signup === TABS.signup
+                ? `FieldsetContainerPrompt ${styles['FieldsetContainer__Signin--Selected']}`
+                : 'FieldsetContainerPrompt'
             }`}
             type={'button'}
             onClick={this.set_sign_up}
@@ -149,7 +151,9 @@ export default class FormEntry extends React.Component {
           />
           <input
             className={`${
-              signin_or_signup === TABS.signin ? styles['FieldsetContainer__Signin--Selected'] : ''
+              signin_or_signup === TABS.signin
+                ? styles['FieldsetContainer__Signin--Selected']
+                : 'FieldsetContainerPrompt'
             }`}
             type={'button'}
             onClick={this.set_sign_in}
