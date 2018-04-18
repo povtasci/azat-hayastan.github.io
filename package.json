@@ -10,7 +10,7 @@
     "react-scripts": "2.0.0-next.b2fd8db8"
   },
   "scripts": {
-    "deploy": "yarn build && gh-pages -d public --branch master",
+    "deploy": "yarn build && gh-pages -d build --branch master",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
