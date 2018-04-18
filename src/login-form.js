@@ -52,14 +52,6 @@ export default class FormEntry extends React.Component {
             />
           </section>
           {SPACER_15_H}
-          <section className={styles.FlexRow}>
-            <label>Receive news updates: </label>
-            <input
-              type={'checkbox'}
-              checked={true}
-              ref={r => (this._checkbox_receive_message = r)}
-            />
-          </section>
           {SPACER_15_H}
           <div>
             <input
