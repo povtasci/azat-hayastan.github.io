@@ -1,0 +1,15 @@
+/* Easy way to center a fieldset cause flex is broken on fieldset */
+.FieldsetContainer {
+  display: block;
+  margin: 1.0em auto;
+  text-align: center;
+}
+
+.FlexRow {
+  display:flex;
+  justify-content:space-between;
+}
+
+.FieldsetContainer__Signin--Selected {
+  background-color:red;
+}
