@@ -33,11 +33,11 @@ class App extends React.Component {
     console.log('foo bar');
   };
 
-  on_submit_signin = async () => {
+  on_submit_signin = async ({ signin_phone_number, signin_password }) => {
     return;
   };
 
-  on_submit_signup = async () => {
+  on_submit_signup = async ({ signup_phone_number, signup_password }) => {
     return;
   };
 

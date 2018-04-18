@@ -75,10 +75,20 @@ export default class FormEntry extends React.Component {
       signup_password,
     } = this.state;
 
+    let did_try_submit = {};
     if (tab === TABS.signin) {
-      const result = await on_submit_signin({ signin_phone_number, signin_password });
+      did_try_submit = await on_submit_signin({ signin_phone_number, signin_password });
     } else if (tab === TABS.signup) {
-      const result = await on_submit_signup({ signup_phone_number, signup_password });
+      did_try_submit = await on_submit_signup({ signup_phone_number, signup_password });
+    }
+
+    const { result, payload, reason } = did_try_submit;
+    if (result === 'failure') {
+      this.setState(() => ({ error: new Error(`Failure: ${reason}`) }));
+    } else if (result === 'success') {
+      // Some congrats message
+    } else {
+      // Not possible
     }
   };
 
