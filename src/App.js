@@ -13,6 +13,8 @@ import AdminPanel from './components/admin-panel';
 
 const LOADING_STATE = { NOT_LOADING: 'not-loading', CURRENTLY_LOADING: 'currently-loading' };
 
+const NUMBER_REGISTERED_MSG = 'Հեռախոսահամարը հաջողությամբ գրանցվեց';
+
 const INIT_STATE = {
   error: null,
   loading_state: LOADING_STATE.NOT_LOADING,
