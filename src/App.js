@@ -1,17 +1,20 @@
 import React from 'react';
 import * as firebase from 'firebase';
+import { Jumbotron, Tabs, Tab } from 'react-bootstrap';
 
 import styles from './App.module.css';
 import { do_send_mass_text, do_send_direct_to_person } from './actions';
 import { __DEV__, __APPLICATION__SECRETS__ } from './constants';
 import { is_phone_number } from './src-common';
-import LoginForm from './login-form';
+import SignupNewNumber from './components/signup-entry';
 
 class ProfileControl extends React.Component {
   render() {
     return <p>hi</p>;
   }
 }
+
+const TABS = { signup: 'signup', signin: 'signin' };
 
 class App extends React.Component {
   state = { error: null, authenticated: null };
@@ -43,26 +46,30 @@ class App extends React.Component {
 
   render() {
     const { error, authenticated } = this.state;
+
+    const maybe_error = error ? (
+      <p className={styles.ErrorMessage}>Something wrong: {error.message}</p>
+    ) : null;
+
     return (
-      <div className={styles.ApplicationContainer}>
-        <div>
+      <main>
+        <Jumbotron>
           <h3 className={styles.ApplicationContainer__Banner}>
-            <p>
-              Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ կապված բոլոր
-              կարևոր իրադարձությունների մասին։
-            </p>
+            Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ կապված բոլոր
+            կարևոր իրադարձությունների մասին։
           </h3>
-          {error ? <p className={styles.ErrorMessage}>Something wrong: {error.message}</p> : null}
-          {authenticated === null ? (
-            <LoginForm
-              on_submit_signup={this.on_submit_signup}
-              on_submit_signin={this.on_submit_signin}
-            />
-          ) : (
-            <ProfileControl />
-          )}
-        </div>
-      </div>
+        </Jumbotron>
+        <Tab.Container id={'AuthingTabContainer'} defaultActiveKey="first">
+          <Tabs defaultActiveKey={1} bsStyle={'pills'}>
+            <Tab eventKey={1} title="Sign up new number">
+              <SignupNewNumber />
+            </Tab>
+            <Tab eventKey={2} title="Sign in to your profile">
+              Tab 2 content
+            </Tab>
+          </Tabs>
+        </Tab.Container>
+      </main>
     );
   }
 }

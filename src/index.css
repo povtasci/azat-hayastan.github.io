@@ -3,3 +3,17 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.jumbotron {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#AuthingTabContainer {
+  padding: 10px;
+}
+
+.tab-content {
+  padding-top: 10px;
+}
