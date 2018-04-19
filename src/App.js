@@ -107,8 +107,7 @@ export default class AzatHayastanApplication extends React.Component {
                   <main className={styles.ApplicationContainer}>
                     <Jumbotron>
                       <h3 className={styles.ApplicationContainer__Banner}>
-                        Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ
-                        կապված բոլոր կարևոր իրադարձությունների մասին։
+                        Ստացեք SMS հաղորդագրություններ` շարժման կարևոր իրադարձությունների մասին
                       </h3>
                     </Jumbotron>
                     {signup_content}
