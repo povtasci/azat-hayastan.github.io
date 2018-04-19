@@ -13,12 +13,14 @@ import AdminPanel from './components/admin-panel';
 
 const LOADING_STATE = { NOT_LOADING: 'not-loading', CURRENTLY_LOADING: 'currently-loading' };
 
+const NUMBER_REGISTERED_MSG = 'Հեռախոսահամարը հաջողությամբ գրանցվեց';
+
 const INIT_STATE = {
   error: null,
   loading_state: LOADING_STATE.NOT_LOADING,
 };
 
-export default class AzatHayastanApplication extends React.Component {
+export default class Fuck_You_Serzh_Sargsyan extends React.Component {
   state = { ...INIT_STATE };
 
   send_mass_text = async () => {
@@ -38,26 +40,32 @@ export default class AzatHayastanApplication extends React.Component {
     return;
   };
 
-  on_submit_signup = ({ signup_phone_number, signup_password, user_thoughts }) => {
+  on_submit_signup = ({ signup_phone_number }) => {
     this.setState(
       () => ({ loading_state: LOADING_STATE.CURRENTLY_LOADING }),
       async () => {
-        const { result, reason, payload } = await do_subscribe_new_number({
-          phone_number: signup_phone_number,
-          password: signup_password,
-          optional_thoughts_given: user_thoughts,
-        });
-        if (result === 'success') {
+        try {
+          const { result, reason, payload } = await do_subscribe_new_number({
+            phone_number: signup_phone_number,
+          });
+          console.log({ result, reason, payload });
+          if (result === 'success') {
+            this.setState(() => ({
+              loading_state: LOADING_STATE.NOT_LOADING,
+            }));
+          } else if (result === 'failure') {
+            this.setState(() => ({
+              error: new Error(`Error: ${reason}`),
+              loading_state: LOADING_STATE.NOT_LOADING,
+            }));
+          } else {
+            // Not possible
+          }
+        } catch (error) {
           this.setState(() => ({
+            error,
             loading_state: LOADING_STATE.NOT_LOADING,
           }));
-        } else if (result === 'failure') {
-          this.setState(() => ({
-            error: new Error(`Error: ${reason}`),
-            loading_state: LOADING_STATE.NOT_LOADING,
-          }));
-        } else {
-          // Not possible
         }
       }
     );
@@ -78,9 +86,9 @@ export default class AzatHayastanApplication extends React.Component {
       <Router>
         <>
           <Switch>
-            <Route exact={true} path={'/admin'} component={AdminPanel} />
+            <Route exact={true} path={'/taknvats'} component={AdminPanel} />
             <Route
-              path="/"
+              path={'/'}
               render={props => {
                 return (
                   <main className={styles.ApplicationContainer}>

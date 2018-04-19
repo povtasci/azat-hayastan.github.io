@@ -13,22 +13,18 @@ const headers = new Headers({
   Accept: 'application/json',
 });
 
-export const do_subscribe_new_number = ({ phone_number, password, optional_thoughts_given }) =>
+export const do_subscribe_new_number = ({ phone_number }) =>
   fetch(__DEV__ ? subscribe_local : subscribe, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ phone_number, password, optional_thoughts_given }),
+    body: JSON.stringify({ phone_number }),
   }).then(r => r.json());
 
-export const do_send_mass_text = (dest_message, russian_or_american) => {
+export const do_send_mass_text = dest_message => {
   return fetch(__DEV__ ? send_mass_text_local : send_mass_text, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      dest_message,
-      is_mass_text: true,
-      direct_person: null,
-    }),
+    body: JSON.stringify({ dest_message }),
   }).then(r => r.json());
 };
 
@@ -36,11 +32,6 @@ export const do_send_direct_to_person = (dest_message, direct_person) => {
   return fetch(__DEV__ ? send_mass_text_local : send_mass_text, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      dest_message,
-      russian_or_american: 'american',
-      is_mass_text: false,
-      direct_person,
-    }),
+    body: JSON.stringify({ dest_message, direct_person }),
   }).then(r => r.json());
 };
