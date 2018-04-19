@@ -6961,7 +6961,7 @@ prop-types-extra@^1.0.1:
   dependencies:
     warning "^3.0.0"
 
-prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1:
+prop-types@>=15.5.0, prop-types@^15.5.0, prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1:
   version "15.6.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.1.tgz#36644453564255ddda391191fb3a125cbdf654ca"
   dependencies:
@@ -7113,6 +7113,12 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-async-script@^0.9.1:
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/react-async-script/-/react-async-script-0.9.1.tgz#d4a496c726fab0c6ef05998ab16e50c742820b60"
+  dependencies:
+    prop-types ">=15.5.0"
+
 react-bootstrap-intl-tel-input@^0.0.16:
   version "0.0.16"
   resolved "https://registry.yarnpkg.com/react-bootstrap-intl-tel-input/-/react-bootstrap-intl-tel-input-0.0.16.tgz#62222fc5a20f270a991dd277f95a07508664e89e"
@@ -7187,6 +7193,12 @@ react-flag-kit@^0.2.2:
   resolved "https://registry.yarnpkg.com/react-flag-kit/-/react-flag-kit-0.2.3.tgz#e84c2979418b764f1ef71e5c14340f8d9211c998"
   dependencies:
     prop-types "^15.5.0"
+
+react-google-recaptcha@^0.11.0:
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/react-google-recaptcha/-/react-google-recaptcha-0.11.0.tgz#2c71382022da6addcae4b1a0b51577b07c644a07"
+  dependencies:
+    prop-types ">=15.5.0"
 
 react-overlays@^0.8.0:
   version "0.8.3"
