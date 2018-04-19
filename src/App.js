@@ -30,7 +30,7 @@ export default class Fuck_You_Serzh_Sargsyan extends React.Component {
     if (is_number) {
       const { value } = this._message_input;
       const msg = value.trim();
-      // const r = await do_send_direct_to_person(msg, phone_number);
+      const r = await do_send_direct_to_person(msg, phone_number);
     } else {
       this.setState(() => ({ error: new Error(`Your input was not a phone number`) }));
     }
