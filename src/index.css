@@ -4,6 +4,7 @@ body {
   font-family: sans-serif;
   background: url('/cover.jpg') 50% 50%;
   background-repeat: no-repeat;
+  height: 100vh;
 }
 
 .jumbotron {
@@ -21,9 +22,7 @@ body {
 }
 
 @media (min-width: 600px) {
-  body {
-    height: 100vh;
-  }
+
   #formControlsTextarea {
     height:100px;
   }

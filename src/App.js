@@ -1,5 +1,4 @@
 import React from 'react';
-import * as firebase from 'firebase';
 import { Jumbotron, Tabs, Tab } from 'react-bootstrap';
 import Spinner from 'react-spinkit';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
@@ -10,14 +9,12 @@ import { do_send_mass_text, do_send_direct_to_person, do_subscribe_new_number } 
 import { __DEV__, __APPLICATION__SECRETS__ } from './constants';
 import { is_phone_number } from './src-common';
 import SignupNewNumber from './components/signup-entry';
-
-const TABS = { signup: 'signup', signin: 'signin' };
+import AdminPanel from './components/admin-panel';
 
 const LOADING_STATE = { NOT_LOADING: 'not-loading', CURRENTLY_LOADING: 'currently-loading' };
 
 const INIT_STATE = {
   error: null,
-  authenticated_user: null,
   loading_state: LOADING_STATE.NOT_LOADING,
 };
 
@@ -52,7 +49,6 @@ export default class AzatHayastanApplication extends React.Component {
         });
         if (result === 'success') {
           this.setState(() => ({
-            authenticated_user: true,
             loading_state: LOADING_STATE.NOT_LOADING,
           }));
         } else if (result === 'failure') {
@@ -68,7 +64,7 @@ export default class AzatHayastanApplication extends React.Component {
   };
 
   render() {
-    const { error, authenticated_user, loading_state } = this.state;
+    const { error, loading_state } = this.state;
     const maybe_error = error ? <p className={styles.ErrorMessage}>{error.message}</p> : null;
     const signup_content =
       loading_state === LOADING_STATE.CURRENTLY_LOADING ? (
@@ -82,13 +78,7 @@ export default class AzatHayastanApplication extends React.Component {
       <Router>
         <>
           <Switch>
-            <Route
-              exact={true}
-              path={'/admin'}
-              render={props => {
-                return <p>some admin page</p>;
-              }}
-            />
+            <Route exact={true} path={'/admin'} component={AdminPanel} />
             <Route
               path="/"
               render={props => {

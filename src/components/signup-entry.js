@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormGroup, ControlLabel, FormControl, HelpBlock, Button } from 'react-bootstrap';
+import { FormGroup, ControlLabel, FormControl, HelpBlock, Button, Label } from 'react-bootstrap';
 import IntlTelInput from 'react-bootstrap-intl-tel-input';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -43,7 +43,9 @@ export default class FormEntry extends React.Component {
     return (
       <form onSubmit={this.on_submit}>
         <FormGroup bsSize={'large'}>
-          <ControlLabel>Հեռախոսահամար</ControlLabel>
+          <h2>
+            <Label bsSize={'large'}>Հեռախոսահամար</Label>
+          </h2>
           <IntlTelInput
             preferredCountries={['AM', 'RU']}
             defaultCountry={'AM'}

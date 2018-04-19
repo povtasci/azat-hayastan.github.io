@@ -156,7 +156,7 @@ exports.subscribe = functions.https.onRequest((request, response) => {
   return check_if_user_already_exists(phone_number)
     .then(({ user_already_exists, user }) => {
       if (user_already_exists) {
-        return fail_with_cors('Phone number already registered', request, response);
+        return fail_with_cors('Հեռախոսահամարը արդեն գրանցված է', request, response);
       } else {
         return persist_new_user({ phone_number, optional_thoughts_given });
       }
