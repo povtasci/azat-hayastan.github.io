@@ -2,12 +2,13 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 const plivo = require('plivo');
+const bcrypt = require('bcrypt');
 
 admin.initializeApp();
 
 const config = functions.config();
 
-const { db_paths, result, plivo_details } = require('./src-common');
+const { db_paths, result, is_phone_number } = require('./src-common');
 
 const register_error = (dest_phone_number, error) =>
   new Promise(resolve => {
@@ -19,13 +20,10 @@ const register_result = (dest_phone_number, message_created) =>
     return resolve();
   });
 
-const send_message = ({ client, dest_phone_number, message, russian_or_american }) => {
-  const { our_message_sender, our_subscription_receiver } = config.phone_numbers;
-  const number =
-    (russian_or_american === 'russian' && our_subscription_receiver) ||
-    (russian_or_american === 'american' && our_message_sender);
+const send_message = ({ client, dest_phone_number, message }) => {
+  const { our_message_sender } = config.phone_numbers;
   return client.messages
-    .create(number, dest_phone_number, message)
+    .create(our_message_sender, dest_phone_number, message)
     .then(register_result.bind(null, dest_phone_number))
     .catch(register_error.bind(null, dest_phone_number));
 };
@@ -86,33 +84,23 @@ const is_valid_signup_message = text => {
   return true;
 };
 
-const persist_new_user = ({ from_number, to_number, text }) => {
-  const is_valid = is_valid_signup_message(text);
-  if (is_valid_signup_message === false)
-    throw new Error(
-      `Invalid response: ${JSON.stringify({
-        from_number,
-        text,
-      })}`
-    );
-  else {
-    return admin
-      .database()
-      .ref(db_paths.subscription_based_signups)
-      .push()
-      .then(reply => {
-        const updates = {};
-        updates[`/${db_paths.subscription_based_signups}/${from_number}`] = {
-          from_number,
-          to_number,
-          received_from_user_text: text,
-        };
-        return admin
-          .database()
-          .ref()
-          .update(updates);
-      });
-  }
+const persist_new_user = ({ phone_number, password, optional_thoughts_given }) => {
+  return admin
+    .database()
+    .ref(db_paths.subscription_based_signups)
+    .push()
+    .then(reply => {
+      const updates = {};
+      updates[`/${db_paths.subscription_based_signups}/${phone_number}`] = {
+        phone_number,
+        optional_thoughts_given,
+        post_key: reply.key,
+      };
+      return admin
+        .database()
+        .ref()
+        .update(updates);
+    });
 };
 
 const reply_to_new_signup = (src_phone_number, dest_phone_number, request, response) =>
@@ -131,13 +119,50 @@ const reply_to_new_signup = (src_phone_number, dest_phone_number, request, respo
     );
   });
 
-exports.subscribe = functions.https.onRequest((request, response) => {
+const check_if_user_already_exists = () => {
+  return Promise.resolve();
+};
+
+// Directly from a text message to us
+exports.subscribe_from_text_message = functions.https.onRequest((request, response) => {
   const { From: from_number, To: to_number, Text: text } = request.body;
-  return persist_new_user({ from_number, to_number, text })
+});
+
+// From the site sign up
+exports.subscribe = functions.https.onRequest((request, response) => {
+  const { phone_number, password, optional_thoughts_given } = request.body;
+  console.log({ phone_number, password, optional_thoughts_given });
+  if (
+    !phone_number ||
+    !password ||
+    typeof phone_number !== 'string' ||
+    !is_phone_number(phone_number) ||
+    password === ''
+  ) {
+    return cors(request, response, () =>
+      response.end(
+        JSON.stringify({
+          result: 'failure',
+          reason: 'bad input parameters',
+        })
+      )
+    );
+  }
+  const { auth_id, auth_token } = config.plivo;
+  const client = new plivo.Client(auth_id, auth_token);
+  return persist_new_user({ phone_number, password, optional_thoughts_given })
     .then(register_result)
-    .then(() => reply_to_new_signup(to_number, from_number, request, response))
+    .then(() =>
+      send_message({ client, dest_phone_number: phone_number, message: 'Thank you for joining' })
+    )
     .then(() => {
-      return cors(request, response, () => response.end());
+      return cors(request, response, () =>
+        response.end(
+          JSON.stringify({
+            result: 'success',
+          })
+        )
+      );
     })
     .catch(register_error);
 });
