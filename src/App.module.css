@@ -13,7 +13,7 @@
 
 @media (min-width: 600px) {
   .ApplicationContainer {
-    padding: 30px;
+    padding: 100px 300px;
   }
 
   .ApplicationContainer__Banner {
