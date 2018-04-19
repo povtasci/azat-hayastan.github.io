@@ -2,8 +2,10 @@ body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
-  background: url('/cover.jpg') 50% 50%;
+  background-image: url('/cover.jpg');
   background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   height: 100vh;
 }
 
@@ -11,6 +13,14 @@ body {
   display:flex;
   align-items:center;
   justify-content:center;
+  background-color: transparent;
+  color: #ffffff;
+}
+
+.jumbotron h1 {
+  font-size: 24px;
+  padding-left: 0;
+  text-align: center;
 }
 
 #AuthingTabContainer {

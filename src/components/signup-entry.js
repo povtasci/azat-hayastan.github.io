@@ -42,14 +42,19 @@ export default class FormEntry extends React.Component {
     return (
       <form onSubmit={this.on_submit}>
         <FormGroup bsSize={'large'}>
-          <h2>
-            <Label bsSize={'large'}>Հեռախոսահամար</Label>
-          </h2>
-          <IntlTelInput
-            preferredCountries={['AM', 'RU']}
-            defaultCountry={'AM'}
-            onChange={this.set_phone_number}
-          />
+          <div class="intl-phone-input">
+          <div class="input-group">
+          <div class="input-group-btn">
+          <button type="button" tabindex="0" aria-hidden="true" class="btn btn-secondary btn-primary dropdown-toggle country-selector" >
+          <img class="flag-icon" src="/static/media/AM.da7c8fce.svg" alt="AM" />
+          </button>
+          </div>
+          <label for="dd440b01-7d27-481f-bd54-444476b99af1" aria-hidden="true" class="sr-only">
+          Please enter your country{"'"}s calling code followed by your phone number
+          </label>
+          <input autocomplete="off" aria-describedby="validation-info" type="text" class="form-control phone-input" placeholder="" value="" />
+          </div>
+          </div>
           {SPACER_15_H}
           <div className={styles.ReCAPTCHA__Wrapper}>
             <ReCAPTCHA
