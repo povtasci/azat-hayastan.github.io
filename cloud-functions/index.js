@@ -127,6 +127,7 @@ exports.subscribe = functions.https.onRequest((request, response) => {
     const { phone_number } = request.body;
     const is_not_well_formatted = is_bad_phone_number_candidate(phone_number);
     if (is_not_well_formatted) {
+      console.info({ raw_body: request.body });
       response.send(
         JSON.stringify({ result: 'failure', reason: 'Only Armenian numbers accepted' })
       );
