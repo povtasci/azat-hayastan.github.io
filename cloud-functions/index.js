@@ -67,6 +67,7 @@ const persist_new_user = ({ phone_number }) => {
     .push()
     .then(reply => {
       const updates = {};
+      updates[`/${db_paths.subscription_based_signups}/${phone_number}`] = { post_key: reply.key };
       updates[`/${db_paths.subscription_based_signups}/${reply.key}`] = {
         phone_number,
         creation_time: new Date().getTime(),
