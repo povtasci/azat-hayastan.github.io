@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const cors = require('cors')({ origin: true });
 const plivo = require('plivo');
 const bcrypt = require('bcrypt');
+const { formatNumber, parseNumber } = require('libphonenumber-js');
 
 admin.initializeApp();
 
@@ -119,50 +120,65 @@ const reply_to_new_signup = (src_phone_number, dest_phone_number, request, respo
     );
   });
 
-const check_if_user_already_exists = () => {
-  return Promise.resolve();
-};
+const check_if_user_already_exists = phone_number =>
+  admin
+    .database()
+    .ref(`/${db_paths.subscription_based_signups}/${phone_number}`)
+    .once('value')
+    .then(snap_shot => snap_shot.val())
+    .then(user => ({ user_already_exists: user !== null, user }));
 
 // Directly from a text message to us
 exports.subscribe_from_text_message = functions.https.onRequest((request, response) => {
   const { From: from_number, To: to_number, Text: text } = request.body;
 });
 
+const validate_site_subscription = ({ phone_number, password }) =>
+  !phone_number ||
+  !password ||
+  typeof phone_number !== 'string' ||
+  !is_phone_number(phone_number) ||
+  password === '';
+
+const fail_with_cors = (because, user_already_exists, req, res) =>
+  new Promise((resolve, reject) => {
+    cors(req, res, () => {
+      res.end(JSON.stringify({ result: 'failure', reason: because }));
+      reject(new Error(`Failure: ${JSON.stringify({ because, user_already_exists })}`));
+    });
+  });
+
+const plain_success_with_cors = (req, res) =>
+  cors(req, res, () => res.end(JSON.stringify({ result: 'success' })));
+
 // From the site sign up
 exports.subscribe = functions.https.onRequest((request, response) => {
-  const { phone_number, password, optional_thoughts_given } = request.body;
-  console.log({ phone_number, password, optional_thoughts_given });
-  if (
-    !phone_number ||
-    !password ||
-    typeof phone_number !== 'string' ||
-    !is_phone_number(phone_number) ||
-    password === ''
-  ) {
-    return cors(request, response, () =>
-      response.end(
-        JSON.stringify({
-          result: 'failure',
-          reason: 'bad input parameters',
-        })
-      )
-    );
+  const {
+    phone_number: unformatted_phone_number,
+    password,
+    optional_thoughts_given,
+  } = request.body;
+  if (validate_site_subscription({ phone_number: unformatted_phone_number, password })) {
+    return fail_with_cors('bad input parameters', request, response);
   }
-  const { auth_id, auth_token } = config.plivo;
-  const client = new plivo.Client(auth_id, auth_token);
-  return persist_new_user({ phone_number, password, optional_thoughts_given })
-    .then(register_result)
-    .then(() =>
-      send_message({ client, dest_phone_number: phone_number, message: 'Thank you for joining' })
-    )
-    .then(() => {
-      return cors(request, response, () =>
-        response.end(
-          JSON.stringify({
-            result: 'success',
-          })
-        )
-      );
+  const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
+  return check_if_user_already_exists(phone_number)
+    .then(({ user_already_exists, user }) => {
+      if (user_already_exists) {
+        return fail_with_cors('User aready exists', user_already_exists, request, response);
+      } else {
+        return persist_new_user({ phone_number, password, optional_thoughts_given });
+      }
     })
+    .then(() => {
+      const { auth_id, auth_token } = config.plivo;
+      const client = new plivo.Client(auth_id, auth_token);
+      return send_message({
+        client,
+        dest_phone_number: phone_number,
+        message: 'Thank you for joining',
+      });
+    })
+    .then(() => plain_success_with_cors(request, response))
     .catch(register_error);
 });
