@@ -6,7 +6,7 @@ const config = functions.config();
 
 admin.initializeApp();
 
-const { db_paths, result, is_phone_number } = require('./src-common');
+const { db_paths, result, is_armenian_phone_number } = require('./src-common');
 
 const cors = require('cors')({ origin: 'https://azathayastan.online' });
 
@@ -113,10 +113,7 @@ const check_if_user_already_exists = phone_number =>
 // });
 
 const is_bad_phone_number_candidate = phone_number =>
-  !phone_number ||
-  typeof phone_number !== 'string' ||
-  !is_phone_number(phone_number) ||
-  !phone_number.startsWith('+374');
+  !phone_number || typeof phone_number !== 'string' || !is_armenian_phone_number(phone_number);
 
 const send_failure = (response, reason) =>
   response.send(JSON.stringify({ result: 'failure', reason }));
@@ -125,31 +122,34 @@ const send_failure = (response, reason) =>
 exports.subscribe = functions.https.onRequest((request, response) => {
   return cors(request, response, () => {
     const { phone_number } = request.body;
-    const is_not_well_formatted = is_bad_phone_number_candidate(phone_number);
+    const with_no_spaces_phone_number = phone_number.replace('-', '').replace(' ', '');
+    const is_not_well_formatted = is_bad_phone_number_candidate(with_no_spaces_phone_number);
     if (is_not_well_formatted) {
-      console.info({ raw_body: request.body });
-      response.send(
-        JSON.stringify({ result: 'failure', reason: 'Only Armenian numbers accepted' })
+      console.info({ msg: `Non Armenian mobile phone provided`, raw_body: request.body });
+      return Promise.resolve(
+        response.send(
+          JSON.stringify({ result: 'failure', reason: 'Only Armenian numbers accepted' })
+        )
       );
-      console.info({ msg: `Non Armenian mobile phone provided`, phone_number });
+    } else {
+      return check_if_user_already_exists(with_no_spaces_phone_number)
+        .then(({ user_already_exists, user }) => {
+          if (user_already_exists) {
+            send_failure(response, 'Հեռախոսահամարը արդեն գրանցված է');
+            throw new Error(`${phone_number} already had account`);
+          } else {
+            return persist_new_user({ phone_number });
+          }
+        })
+        .then(() => {
+          const { auth_id, auth_token } = config.plivo;
+          const client = new plivo.Client(auth_id, auth_token);
+          return send_message({ client, dest_phone_number: phone_number, message: INITIAL_TEXT });
+        })
+        .then(() => response.send(JSON.stringify({ result: 'success' })))
+        .catch(error => {
+          console.error(`${error.message}`);
+        });
     }
-    return check_if_user_already_exists(phone_number)
-      .then(({ user_already_exists, user }) => {
-        if (user_already_exists) {
-          send_failure(response, 'Հեռախոսահամարը արդեն գրանցված է');
-          throw new Error(`${phone_number} already had account`);
-        } else {
-          return persist_new_user({ phone_number });
-        }
-      })
-      .then(() => {
-        const { auth_id, auth_token } = config.plivo;
-        const client = new plivo.Client(auth_id, auth_token);
-        return send_message({ client, dest_phone_number: phone_number, message: INITIAL_TEXT });
-      })
-      .then(() => response.send(JSON.stringify({ result: 'success' })))
-      .catch(error => {
-        console.error(`${error.message}`);
-      });
   });
 });
