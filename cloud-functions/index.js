@@ -24,17 +24,10 @@ const register_result = (dest_phone_number, message_created) =>
 const send_message = ({ client, dest_phone_number, message }) => {
   const { our_message_sender } = config.phone_numbers;
   // alphaIDs will not work when sending to US numbers
-  if (dest_phone_number.startsWith('+1')) {
-    return client.messages
-      .create(our_message_sender, dest_phone_number, message)
-      .then(register_result.bind(null, dest_phone_number))
-      .catch(register_error.bind(null, dest_phone_number));
-  } else {
-    return client.messages
-      .create('NIKOL', dest_phone_number, message)
-      .then(register_result.bind(null, dest_phone_number))
-      .catch(register_error.bind(null, dest_phone_number));
-  }
+  return client.messages
+    .create(our_message_sender, dest_phone_number, message)
+    .then(register_result.bind(null, dest_phone_number))
+    .catch(register_error.bind(null, dest_phone_number));
 };
 
 const send_to_all_subscription_based = (client, message) => {
