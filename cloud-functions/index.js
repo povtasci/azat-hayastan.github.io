@@ -111,6 +111,9 @@ const check_if_user_already_exists = phone_number =>
 const is_bad_phone_number_candidate = phone_number =>
   !phone_number || typeof phone_number !== 'string' || !is_phone_number(phone_number);
 
+const send_failure = (response, reason) =>
+  response.send(JSON.stringify({ result: 'failure', reason }));
+
 // From the site sign up, with the cors middleware, important to never do .end
 exports.subscribe = functions.https.onRequest((request, response) => {
   cors(request, response, () => {
@@ -123,7 +126,7 @@ exports.subscribe = functions.https.onRequest((request, response) => {
     return check_if_user_already_exists(phone_number)
       .then(({ user_already_exists, user }) => {
         if (user_already_exists) {
-          return 'Հեռախոսահամարը արդեն գրանցված է', request, response;
+          return send_failure(response, 'Հեռախոսահամարը արդեն գրանցված է');
         } else {
           return persist_new_user({ phone_number });
         }
@@ -134,7 +137,9 @@ exports.subscribe = functions.https.onRequest((request, response) => {
         return send_message({
           client,
           dest_phone_number: phone_number,
-          message: 'Welcome to the revolution',
+          message: `
+Welcome to my direct line, you will get news and updates from this number --Nikol Pashinyan
+`,
         });
       })
       .then(() => response.send(JSON.stringify({ result: 'success' })))
