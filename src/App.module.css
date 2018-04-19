@@ -3,6 +3,14 @@
   font-weight: 700;
 }
 
+.ApplicationContainer__SpinnerContainer {
+  display:flex;
+  justify-content: center;
+  height: 300px;
+  align-items: center;
+  background: beige;
+}
+
 @media (min-width: 600px) {
   .ApplicationContainer {
     padding: 30px;

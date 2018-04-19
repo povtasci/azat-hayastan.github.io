@@ -42,22 +42,7 @@ export default class FormEntry extends React.Component {
     ) {
       this.setState(() => ({ error: new Error(`Phone number or password is not valid`) }));
     } else {
-      on_submit_signup(
-        {
-          signup_phone_number,
-          signup_password,
-          user_thoughts,
-        },
-        (result, reason) => {
-          if (result === 'success') {
-            //
-          } else if (result === 'failure') {
-            this.setState(() => ({ error: new Error(`Failure because: ${reason}`) }));
-          } else {
-            throw new Error(`Impossible situation`);
-          }
-        }
-      );
+      on_submit_signup({ signup_phone_number, signup_password, user_thoughts });
     }
   };
 

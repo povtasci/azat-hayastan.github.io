@@ -2,6 +2,8 @@ import React from 'react';
 import * as firebase from 'firebase';
 import { Jumbotron, Tabs, Tab } from 'react-bootstrap';
 import Spinner from 'react-spinkit';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Switch } from 'react-router';
 
 import styles from './App.module.css';
 import { do_send_mass_text, do_send_direct_to_person, do_subscribe_new_number } from './actions';
@@ -25,14 +27,13 @@ const LOADING_STATE = {
 
 const INIT_STATE = {
   error: null,
-  authenticated: null,
-  content_loading_state: LOADING_STATE.NOT_STARTED_YET,
+  authenticated_user: null,
+  loading_state: LOADING_STATE.NOT_STARTED_YET,
+  // loading_state: LOADING_STATE.CURRENTLY_LOADING,
 };
 
 export default class AzatHayastanApplication extends React.Component {
-  state = { INIT_STATE };
-
-  componentDidMount() {}
+  state = { ...INIT_STATE };
 
   send_mass_text = async () => {
     const { value } = this._phone_number_input;
@@ -47,15 +48,11 @@ export default class AzatHayastanApplication extends React.Component {
     }
   };
 
-  do_login = e => {
-    console.log('foo bar');
-  };
-
   on_submit_signin = async ({ signin_phone_number, signin_password }) => {
     return;
   };
 
-  on_submit_signup = ({ signup_phone_number, signup_password, user_thoughts }, result_cb) => {
+  on_submit_signup = ({ signup_phone_number, signup_password, user_thoughts }) => {
     this.setState(
       () => ({ loading_state: LOADING_STATE.CURRENTLY_LOADING }),
       async () => {
@@ -65,22 +62,27 @@ export default class AzatHayastanApplication extends React.Component {
           optional_thoughts_given: user_thoughts,
         });
         if (result === 'success') {
-          result_cb('success', null);
+          this.setState(() => ({ authenticated_user: true }));
+        } else if (result === 'failure') {
+          this.setState(() => ({ error: new Error(`Error: because: ${reason}`) }));
+        } else {
+          // Not possible
         }
+        console.log({ result, reason, payload });
       }
     );
   };
 
   render() {
-    const { error, authenticated, loading_state } = this.state;
-
+    const { error, authenticated_user, loading_state } = this.state;
     const maybe_error = error ? (
       <p className={styles.ErrorMessage}>Something wrong: {error.message}</p>
     ) : null;
 
-    const tab_one_content =
+    console.log({ loading_state });
+    const signup_content =
       loading_state === LOADING_STATE.CURRENTLY_LOADING ? (
-        <div>
+        <div className={styles.ApplicationContainer__SpinnerContainer}>
           <Spinner fadeIn={'quarter'} name={'ball-scale-ripple-multiple'} />
         </div>
       ) : (
@@ -88,24 +90,35 @@ export default class AzatHayastanApplication extends React.Component {
       );
 
     return (
-      <main className={styles.ApplicationContainer}>
-        <Jumbotron>
-          <h3 className={styles.ApplicationContainer__Banner}>
-            Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ կապված բոլոր
-            կարևոր իրադարձությունների մասին։
-          </h3>
-        </Jumbotron>
-        <Tab.Container id={'AuthingTabContainer'} defaultActiveKey="first">
-          <Tabs defaultActiveKey={1} bsStyle={'pills'}>
-            <Tab eventKey={1} title="Sign up new number">
-              {tab_one_content}
-            </Tab>
-            <Tab eventKey={2} title="Sign in to your profile">
-              Tab 2 content
-            </Tab>
-          </Tabs>
-        </Tab.Container>
-      </main>
+      <Router>
+        <>
+          <Switch>
+            <Route
+              exact={true}
+              path={'/admin'}
+              render={props => {
+                return <p>some admin page</p>;
+              }}
+            />
+            <Route
+              path="/"
+              render={props => {
+                return (
+                  <main className={styles.ApplicationContainer}>
+                    <Jumbotron>
+                      <h3 className={styles.ApplicationContainer__Banner}>
+                        Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ
+                        կապված բոլոր կարևոր իրադարձությունների մասին։
+                      </h3>
+                    </Jumbotron>
+                    {signup_content}
+                  </main>
+                );
+              }}
+            />
+          </Switch>
+        </>
+      </Router>
     );
   }
 }
