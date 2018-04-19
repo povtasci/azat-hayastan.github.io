@@ -52,7 +52,7 @@ class App extends React.Component {
     ) : null;
 
     return (
-      <main>
+      <main className={styles.ApplicationContainer}>
         <Jumbotron>
           <h3 className={styles.ApplicationContainer__Banner}>
             Այստեղ բաժանորդագրվելով Դուք կստանաք SMS հաղորդագրություններ` շարժման հետ կապված բոլոր
