@@ -47,7 +47,7 @@ export default class FormEntry extends React.Component {
     return (
       <form onSubmit={this.on_submit}>
         <FormGroup bsSize={'large'} validationState={this.validation_state()}>
-          <ControlLabel>Phone Number</ControlLabel>
+          <ControlLabel>Հեռախոսահամար</ControlLabel>
           <IntlTelInput
             preferredCountries={['AM', 'RU']}
             defaultCountry={'AM'}
@@ -62,8 +62,13 @@ export default class FormEntry extends React.Component {
             />
           </div>
           {SPACER_15_H}
+          <ReCAPTCHA
+            ref="recaptcha"
+            sitekey={RECAPTCHA_SITE_KEY}
+            onChange={this.recaptcha_changed}
+          />
           <Button block={true} bsSize={'large'} bsStyle={'primary'} type={'submit'}>
-            Subscribe
+            Գրանցվել
           </Button>
         </FormGroup>
       </form>
