@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { FormGroup, ControlLabel, FormControl, HelpBlock, Button, Label } from 'react-bootstrap';
+import { FormGroup, Button, Label } from 'react-bootstrap';
 import IntlTelInput from 'react-bootstrap-intl-tel-input';
 import ReCAPTCHA from 'react-google-recaptcha';
 
@@ -24,9 +23,10 @@ export default class FormEntry extends React.Component {
     const { signup_phone_number, captcha_satisfied } = this.state;
     const { on_submit_signup } = this.props;
     const is_valid_phone_number = is_phone_number(signup_phone_number);
-    // if (is_valid_phone_number === false || captcha_satisfied === false) {
-    if (is_valid_phone_number === false) {
-      this.setState(() => ({ error: new Error(`Phone number or password is not valid`) }));
+    if (is_valid_phone_number === false || captcha_satisfied === false) {
+      this.setState(() => ({
+        error: new Error(`Phone number not entered or captcha not checked`),
+      }));
     } else {
       on_submit_signup({ signup_phone_number });
     }

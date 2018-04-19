@@ -1,4 +1,3 @@
-import React from 'react';
 import __APPLICATION__SECRETS__ from './runtimeconfig.json';
 
 let __DEV__ = null;

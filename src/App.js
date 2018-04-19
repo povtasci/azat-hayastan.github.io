@@ -60,7 +60,10 @@ export default class Fuck_You_Serzh_Sargsyan extends React.Component {
             // Not possible
           }
         } catch (error) {
-          this.setState(() => ({ error }));
+          this.setState(() => ({
+            error,
+            loading_state: LOADING_STATE.NOT_LOADING,
+          }));
         }
       }
     );

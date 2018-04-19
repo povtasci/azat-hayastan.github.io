@@ -1,8 +1,9 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const cors = require('cors')({ origin: true });
 const plivo = require('plivo');
 const bcrypt = require('bcrypt');
+const cors = require('cors')({ origin: true });
+
 const { formatNumber, parseNumber } = require('libphonenumber-js');
 
 admin.initializeApp();
@@ -54,13 +55,6 @@ const send_to_all_subscription_based = (client, message) => {
     });
 };
 
-const fail_with_cors = (because, req, res) =>
-  new Promise(resolve =>
-    resolve(cors(req, res, () => res.end(JSON.stringify({ result: 'failure', reason: because }))))
-  ).then(() => {
-    throw new Error(`Failure: ${because}`);
-  });
-
 exports.send_mass_text = functions.https.onRequest((request, response) => {
   const { auth_id, auth_token } = config.plivo;
   const client = new plivo.Client(auth_id, auth_token);
@@ -93,21 +87,21 @@ const persist_new_user = ({ phone_number }) => {
     });
 };
 
-const reply_to_new_signup = (src_phone_number, dest_phone_number, request, response) =>
-  new Promise(resolve => {
-    const p_response = new plivo.Response();
-    p_response.addMessage('Thank you for signing up, we will send you news and updates', {
-      src: src_phone_number,
-      dst: dest_phone_number,
-    });
-    return resolve(
-      cors(request, response, () => {
-        const msg = p_response.toXML();
-        response.setHeader('content-type', 'application/xml');
-        response.send(msg);
-      })
-    );
-  });
+// const reply_to_new_signup = (src_phone_number, dest_phone_number, request, response) =>
+//   new Promise(resolve => {
+//     const p_response = new plivo.Response();
+//     p_response.addMessage('Thank you for signing up, we will send you news and updates', {
+//       src: src_phone_number,
+//       dst: dest_phone_number,
+//     });
+//     return resolve(
+//       cors(request, response, () => {
+//         const msg = p_response.toXML();
+//         response.setHeader('content-type', 'application/xml');
+//         response.send(msg);
+//       })
+//     );
+//   });
 
 const check_if_user_already_exists = phone_number =>
   admin
@@ -118,40 +112,40 @@ const check_if_user_already_exists = phone_number =>
     .then(user => ({ user_already_exists: user !== null, user }));
 
 // Directly from a text message to us
-exports.subscribe_from_text_message = functions.https.onRequest((request, response) => {
-  const { From: from_number, To: to_number, Text: text } = request.body;
-});
+// exports.subscribe_from_text_message = functions.https.onRequest((request, response) => {
+//   const { From: from_number, To: to_number, Text: text } = request.body;
+// });
 
-const validate_site_subscription = ({ phone_number }) =>
+const is_bad_phone_number_candidate = phone_number =>
   !phone_number || typeof phone_number !== 'string' || !is_phone_number(phone_number);
 
-const plain_success_with_cors = (req, res) =>
-  cors(req, res, () => res.end(JSON.stringify({ result: 'success' })));
-
-// From the site sign up
+// From the site sign up, with the cors middleware, important to never do .end
 exports.subscribe = functions.https.onRequest((request, response) => {
-  const { phone_number: unformatted_phone_number } = request.body;
-  if (validate_site_subscription({ phone_number: unformatted_phone_number })) {
-    return fail_with_cors('bad input parameters', request, response).catch(register_error);
-  }
-  const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
-  return check_if_user_already_exists(phone_number)
-    .then(({ user_already_exists, user }) => {
-      if (user_already_exists) {
-        return fail_with_cors('Հեռախոսահամարը արդեն գրանցված է', request, response);
-      } else {
-        return persist_new_user({ phone_number });
-      }
-    })
-    .then(() => {
-      const { auth_id, auth_token } = config.plivo;
-      const client = new plivo.Client(auth_id, auth_token);
-      return send_message({
-        client,
-        dest_phone_number: phone_number,
-        message: 'Welcome to the revolution',
-      });
-    })
-    .then(() => plain_success_with_cors(request, response))
-    .catch(register_error);
+  cors(request, response, () => {
+    const { phone_number: unformatted_phone_number } = request.body;
+    const is_not_well_formatted = is_bad_phone_number_candidate(unformatted_phone_number);
+    if (is_not_well_formatted) {
+      return response.send(JSON.stringify({ result: 'failure', reason: 'bad input parameters' }));
+    }
+    const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
+    return check_if_user_already_exists(phone_number)
+      .then(({ user_already_exists, user }) => {
+        if (user_already_exists) {
+          return 'Հեռախոսահամարը արդեն գրանցված է', request, response;
+        } else {
+          return persist_new_user({ phone_number });
+        }
+      })
+      .then(() => {
+        const { auth_id, auth_token } = config.plivo;
+        const client = new plivo.Client(auth_id, auth_token);
+        return send_message({
+          client,
+          dest_phone_number: phone_number,
+          message: 'Welcome to the revolution',
+        });
+      })
+      .then(() => response.send(JSON.stringify({ result: 'success' })))
+      .catch(register_error);
+  });
 });
