@@ -17,5 +17,6 @@
 @media (max-width: 450px) {
   .ApplicationContainer__Banner {
     text-align:center;
+    padding: 10px;
   }
 }

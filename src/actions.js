@@ -13,11 +13,11 @@ const headers = new Headers({
   Accept: 'application/json',
 });
 
-export const do_subscribe_new_number = (phone_number, password) =>
+export const do_subscribe_new_number = ({ phone_number, password, optional_thoughts_given }) =>
   fetch(__DEV__ ? subscribe_local : subscribe, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ phone_number, password }),
+    body: JSON.stringify({ phone_number, password, optional_thoughts_given }),
   }).then(r => r.json());
 
 export const do_send_mass_text = (dest_message, russian_or_american) => {
@@ -26,7 +26,6 @@ export const do_send_mass_text = (dest_message, russian_or_american) => {
     headers,
     body: JSON.stringify({
       dest_message,
-      russian_or_american,
       is_mass_text: true,
       direct_person: null,
     }),

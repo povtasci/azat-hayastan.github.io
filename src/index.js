@@ -4,5 +4,7 @@ import './index.css';
 import App from './App';
 // import registerServiceWorker from './registerServiceWorker';
 
+window.recaptchaOptions = { lang: 'am' };
+
 ReactDOM.render(<App />, document.getElementById('root'));
 // registerServiceWorker();
