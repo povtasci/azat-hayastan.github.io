@@ -1,7 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const plivo = require('plivo');
-const bcrypt = require('bcrypt');
 const cors = require('cors')({ origin: true });
 
 const { formatNumber, parseNumber } = require('libphonenumber-js');
