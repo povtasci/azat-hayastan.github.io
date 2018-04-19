@@ -33,10 +33,6 @@ export default class FormEntry extends React.Component {
     }
   };
 
-  validation_state() {
-    return null;
-  }
-
   set_phone_number = ({ intlPhoneNumber }) =>
     this.setState({ signup_phone_number: intlPhoneNumber });
 
@@ -46,7 +42,7 @@ export default class FormEntry extends React.Component {
     const { error } = this.state;
     return (
       <form onSubmit={this.on_submit}>
-        <FormGroup bsSize={'large'} validationState={this.validation_state()}>
+        <FormGroup bsSize={'large'}>
           <ControlLabel>Հեռախոսահամար</ControlLabel>
           <IntlTelInput
             preferredCountries={['AM', 'RU']}
@@ -61,6 +57,7 @@ export default class FormEntry extends React.Component {
               onChange={this.recaptcha_changed}
             />
           </div>
+          {SPACER_15_H}
           <Button block={true} bsSize={'large'} bsStyle={'primary'} type={'submit'}>
             Գրանցվել
           </Button>
