@@ -11,25 +11,14 @@ import { __DEV__, __APPLICATION__SECRETS__ } from './constants';
 import { is_phone_number } from './src-common';
 import SignupNewNumber from './components/signup-entry';
 
-class ProfileControl extends React.Component {
-  render() {
-    return <p>hi</p>;
-  }
-}
-
 const TABS = { signup: 'signup', signin: 'signin' };
 
-const LOADING_STATE = {
-  NOT_STARTED_YET: 'not-started-yet',
-  DID_LOAD: 'did-load',
-  CURRENTLY_LOADING: 'currently-loading',
-};
+const LOADING_STATE = { NOT_LOADING: 'not-loading', CURRENTLY_LOADING: 'currently-loading' };
 
 const INIT_STATE = {
   error: null,
   authenticated_user: null,
-  loading_state: LOADING_STATE.NOT_STARTED_YET,
-  // loading_state: LOADING_STATE.CURRENTLY_LOADING,
+  loading_state: LOADING_STATE.NOT_LOADING,
 };
 
 export default class AzatHayastanApplication extends React.Component {
@@ -62,24 +51,25 @@ export default class AzatHayastanApplication extends React.Component {
           optional_thoughts_given: user_thoughts,
         });
         if (result === 'success') {
-          this.setState(() => ({ authenticated_user: true }));
+          this.setState(() => ({
+            authenticated_user: true,
+            loading_state: LOADING_STATE.NOT_LOADING,
+          }));
         } else if (result === 'failure') {
-          this.setState(() => ({ error: new Error(`Error: because: ${reason}`) }));
+          this.setState(() => ({
+            error: new Error(`Error: ${reason}`),
+            loading_state: LOADING_STATE.NOT_LOADING,
+          }));
         } else {
           // Not possible
         }
-        console.log({ result, reason, payload });
       }
     );
   };
 
   render() {
     const { error, authenticated_user, loading_state } = this.state;
-    const maybe_error = error ? (
-      <p className={styles.ErrorMessage}>Something wrong: {error.message}</p>
-    ) : null;
-
-    console.log({ loading_state });
+    const maybe_error = error ? <p className={styles.ErrorMessage}>{error.message}</p> : null;
     const signup_content =
       loading_state === LOADING_STATE.CURRENTLY_LOADING ? (
         <div className={styles.ApplicationContainer__SpinnerContainer}>
@@ -88,7 +78,6 @@ export default class AzatHayastanApplication extends React.Component {
       ) : (
         <SignupNewNumber on_submit_signup={this.on_submit_signup} />
       );
-
     return (
       <Router>
         <>
@@ -110,6 +99,7 @@ export default class AzatHayastanApplication extends React.Component {
                         Ստացեք SMS հաղորդագրություններ` շարժման կարևոր իրադարձությունների մասին
                       </h3>
                     </Jumbotron>
+                    {maybe_error}
                     {signup_content}
                   </main>
                 );

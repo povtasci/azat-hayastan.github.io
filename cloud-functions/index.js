@@ -133,12 +133,8 @@ exports.subscribe_from_text_message = functions.https.onRequest((request, respon
   const { From: from_number, To: to_number, Text: text } = request.body;
 });
 
-const validate_site_subscription = ({ phone_number, password }) =>
-  !phone_number ||
-  !password ||
-  typeof phone_number !== 'string' ||
-  !is_phone_number(phone_number) ||
-  password === '';
+const validate_site_subscription = ({ phone_number }) =>
+  !phone_number || typeof phone_number !== 'string' || !is_phone_number(phone_number);
 
 const fail_with_cors = (because, req, res) =>
   new Promise(resolve =>
@@ -152,21 +148,17 @@ const plain_success_with_cors = (req, res) =>
 
 // From the site sign up
 exports.subscribe = functions.https.onRequest((request, response) => {
-  const {
-    phone_number: unformatted_phone_number,
-    password,
-    optional_thoughts_given,
-  } = request.body;
-  if (validate_site_subscription({ phone_number: unformatted_phone_number, password })) {
+  const { phone_number: unformatted_phone_number, optional_thoughts_given } = request.body;
+  if (validate_site_subscription({ phone_number: unformatted_phone_number })) {
     return fail_with_cors('bad input parameters', request, response).catch(register_error);
   }
   const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
   return check_if_user_already_exists(phone_number)
     .then(({ user_already_exists, user }) => {
       if (user_already_exists) {
-        return fail_with_cors('User aready exists', request, response);
+        return fail_with_cors('Phone number already registered', request, response);
       } else {
-        return persist_new_user({ phone_number, password, optional_thoughts_given });
+        return persist_new_user({ phone_number, optional_thoughts_given });
       }
     })
     .then(() => {

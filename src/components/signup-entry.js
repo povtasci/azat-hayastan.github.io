@@ -61,12 +61,6 @@ export default class FormEntry extends React.Component {
               onChange={this.recaptcha_changed}
             />
           </div>
-          {SPACER_15_H}
-          <ReCAPTCHA
-            ref="recaptcha"
-            sitekey={RECAPTCHA_SITE_KEY}
-            onChange={this.recaptcha_changed}
-          />
           <Button block={true} bsSize={'large'} bsStyle={'primary'} type={'submit'}>
             Գրանցվել
           </Button>
