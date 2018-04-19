@@ -11,6 +11,8 @@ const { db_paths, result, is_phone_number } = require('./src-common');
 
 const cors = require('cors')({ origin: 'https://azathayastan.online' });
 
+const INITIAL_TEXT = `Welcome to my direct line, you will get news and updates from this number --Nikol Pashinyan 🇦🇲 `;
+
 const register_error = (dest_phone_number, error) =>
   new Promise(resolve => {
     return resolve();
@@ -33,13 +35,13 @@ const send_message = ({ client, dest_phone_number, message }) => {
 const send_to_all_subscription_based = (client, message) => {
   return admin
     .database()
-    .ref(db_paths.subscription_based_signups)
+    .ref(`/${db_paths.subscription_based_signups}/user-data`)
     .once('value')
     .then(snap_shot => snap_shot.val())
     .then(rows => {
       if (rows !== null) {
-        for (const row of rows) {
-          const { dest_phone_number } = row;
+        for (const row of Object.values(rows)) {
+          const { phone_number: dest_phone_number } = row;
           send_message({ client, dest_phone_number, message });
         }
         return rows.length;
@@ -67,8 +69,10 @@ const persist_new_user = ({ phone_number }) => {
     .push()
     .then(reply => {
       const updates = {};
-      updates[`/${db_paths.subscription_based_signups}/${phone_number}`] = { post_key: reply.key };
-      updates[`/${db_paths.subscription_based_signups}/${reply.key}`] = {
+      updates[`/${db_paths.subscription_based_signups}/accounts/${phone_number}`] = {
+        post_key: reply.key,
+      };
+      updates[`/${db_paths.subscription_based_signups}/user-data/${reply.key}`] = {
         phone_number,
         creation_time: new Date().getTime(),
         post_key: reply.key,
@@ -99,7 +103,7 @@ const persist_new_user = ({ phone_number }) => {
 const check_if_user_already_exists = phone_number =>
   admin
     .database()
-    .ref(`/${db_paths.subscription_based_signups}/${phone_number}`)
+    .ref(`/${db_paths.subscription_based_signups}/accounts/${phone_number}`)
     .once('value')
     .then(snap_shot => snap_shot.val())
     .then(user => ({ user_already_exists: user !== null, user }));
@@ -136,13 +140,7 @@ exports.subscribe = functions.https.onRequest((request, response) => {
       .then(() => {
         const { auth_id, auth_token } = config.plivo;
         const client = new plivo.Client(auth_id, auth_token);
-        return send_message({
-          client,
-          dest_phone_number: phone_number,
-          message: `
-Welcome to my direct line, you will get news and updates from this number --Nikol Pashinyan 🇦🇲
-`,
-        });
+        return send_message({ client, dest_phone_number: phone_number, message: INITIAL_TEXT });
       })
       .then(() => response.send(JSON.stringify({ result: 'success' })))
       .catch(error => {
