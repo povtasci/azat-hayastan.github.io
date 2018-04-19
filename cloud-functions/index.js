@@ -1,7 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const plivo = require('plivo');
-const { formatNumber, parseNumber } = require('libphonenumber-js');
 
 const config = functions.config();
 
@@ -114,7 +113,10 @@ const check_if_user_already_exists = phone_number =>
 // });
 
 const is_bad_phone_number_candidate = phone_number =>
-  !phone_number || typeof phone_number !== 'string' || !is_phone_number(phone_number);
+  !phone_number ||
+  typeof phone_number !== 'string' ||
+  !is_phone_number(phone_number) ||
+  !phone_number.startsWith('+374');
 
 const send_failure = (response, reason) =>
   response.send(JSON.stringify({ result: 'failure', reason }));
@@ -122,12 +124,14 @@ const send_failure = (response, reason) =>
 // From the site sign up, with the cors middleware, important to never do .end
 exports.subscribe = functions.https.onRequest((request, response) => {
   return cors(request, response, () => {
-    const { phone_number: unformatted_phone_number } = request.body;
-    const is_not_well_formatted = is_bad_phone_number_candidate(unformatted_phone_number);
+    const { phone_number } = request.body;
+    const is_not_well_formatted = is_bad_phone_number_candidate(phone_number);
     if (is_not_well_formatted) {
-      return response.send(JSON.stringify({ result: 'failure', reason: 'bad input parameters' }));
+      response.send(
+        JSON.stringify({ result: 'failure', reason: 'Only Armenian numbers accepted' })
+      );
+      throw new Error(`Non Armenian mobile phone provided`);
     }
-    const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
     return check_if_user_already_exists(phone_number)
       .then(({ user_already_exists, user }) => {
         if (user_already_exists) {
