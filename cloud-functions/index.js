@@ -140,12 +140,11 @@ const validate_site_subscription = ({ phone_number, password }) =>
   !is_phone_number(phone_number) ||
   password === '';
 
-const fail_with_cors = (because, user_already_exists, req, res) =>
-  new Promise((resolve, reject) => {
-    cors(req, res, () => {
-      res.end(JSON.stringify({ result: 'failure', reason: because }));
-      reject(new Error(`Failure: ${JSON.stringify({ because, user_already_exists })}`));
-    });
+const fail_with_cors = (because, req, res) =>
+  new Promise(resolve =>
+    resolve(cors(req, res, () => res.end(JSON.stringify({ result: 'failure', reason: because }))))
+  ).then(() => {
+    throw new Error(`Failure: ${because}`);
   });
 
 const plain_success_with_cors = (req, res) =>
@@ -159,13 +158,13 @@ exports.subscribe = functions.https.onRequest((request, response) => {
     optional_thoughts_given,
   } = request.body;
   if (validate_site_subscription({ phone_number: unformatted_phone_number, password })) {
-    return fail_with_cors('bad input parameters', request, response);
+    return fail_with_cors('bad input parameters', request, response).catch(register_error);
   }
   const phone_number = formatNumber(parseNumber(unformatted_phone_number), 'International');
   return check_if_user_already_exists(phone_number)
     .then(({ user_already_exists, user }) => {
       if (user_already_exists) {
-        return fail_with_cors('User aready exists', user_already_exists, request, response);
+        return fail_with_cors('User aready exists', request, response);
       } else {
         return persist_new_user({ phone_number, password, optional_thoughts_given });
       }
@@ -179,6 +178,5 @@ exports.subscribe = functions.https.onRequest((request, response) => {
         message: 'Thank you for joining',
       });
     })
-    .then(() => plain_success_with_cors(request, response))
     .catch(register_error);
 });
