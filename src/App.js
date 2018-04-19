@@ -18,7 +18,7 @@ const INIT_STATE = {
   loading_state: LOADING_STATE.NOT_LOADING,
 };
 
-export default class AzatHayastanApplication extends React.Component {
+export default class Fuck_You_Serzh_Sargsyan extends React.Component {
   state = { ...INIT_STATE };
 
   send_mass_text = async () => {
@@ -81,9 +81,9 @@ export default class AzatHayastanApplication extends React.Component {
       <Router>
         <>
           <Switch>
-            <Route exact={true} path={'/admin'} component={AdminPanel} />
+            <Route exact={true} path={'/taknvats'} component={AdminPanel} />
             <Route
-              path="/"
+              path={'/'}
               render={props => {
                 return (
                   <main className={styles.ApplicationContainer}>
