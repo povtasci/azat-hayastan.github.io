@@ -38,26 +38,29 @@ export default class AzatHayastanApplication extends React.Component {
     return;
   };
 
-  on_submit_signup = ({ signup_phone_number, signup_password, user_thoughts }) => {
+  on_submit_signup = ({ signup_phone_number }) => {
     this.setState(
       () => ({ loading_state: LOADING_STATE.CURRENTLY_LOADING }),
       async () => {
-        const { result, reason, payload } = await do_subscribe_new_number({
-          phone_number: signup_phone_number,
-          password: signup_password,
-          optional_thoughts_given: user_thoughts,
-        });
-        if (result === 'success') {
-          this.setState(() => ({
-            loading_state: LOADING_STATE.NOT_LOADING,
-          }));
-        } else if (result === 'failure') {
-          this.setState(() => ({
-            error: new Error(`Error: ${reason}`),
-            loading_state: LOADING_STATE.NOT_LOADING,
-          }));
-        } else {
-          // Not possible
+        try {
+          const { result, reason, payload } = await do_subscribe_new_number({
+            phone_number: signup_phone_number,
+          });
+          console.log({ result, reason, payload });
+          if (result === 'success') {
+            this.setState(() => ({
+              loading_state: LOADING_STATE.NOT_LOADING,
+            }));
+          } else if (result === 'failure') {
+            this.setState(() => ({
+              error: new Error(`Error: ${reason}`),
+              loading_state: LOADING_STATE.NOT_LOADING,
+            }));
+          } else {
+            // Not possible
+          }
+        } catch (error) {
+          this.setState(() => ({ error }));
         }
       }
     );

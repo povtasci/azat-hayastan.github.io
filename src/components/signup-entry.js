@@ -10,8 +10,6 @@ import { RECAPTCHA_SITE_KEY } from '../constants';
 
 const SPACER_15_H = <div style={{ height: '15px', width: '100%' }} />;
 
-const SHARE_YOUR_THOUGHTS_LIMIT = 3000;
-
 const INIT_STATE = {
   error: null,
   signup_phone_number: '',
@@ -23,10 +21,11 @@ export default class FormEntry extends React.Component {
 
   on_submit = e => {
     e.preventDefault();
-    const { signup_phone_number, share_your_thoughts, captcha_satisfied } = this.state;
+    const { signup_phone_number, captcha_satisfied } = this.state;
     const { on_submit_signup } = this.props;
     const is_valid_phone_number = is_phone_number(signup_phone_number);
-    if (is_valid_phone_number === false || captcha_satisfied === false) {
+    // if (is_valid_phone_number === false || captcha_satisfied === false) {
+    if (is_valid_phone_number === false) {
       this.setState(() => ({ error: new Error(`Phone number or password is not valid`) }));
     } else {
       on_submit_signup({ signup_phone_number });
