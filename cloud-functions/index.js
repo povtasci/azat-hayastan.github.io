@@ -1,15 +1,15 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const plivo = require('plivo');
-const cors = require('cors')({ origin: true });
-
 const { formatNumber, parseNumber } = require('libphonenumber-js');
-
-admin.initializeApp();
 
 const config = functions.config();
 
+admin.initializeApp();
+
 const { db_paths, result, is_phone_number } = require('./src-common');
+
+const cors = require('cors')({ origin: 'https://azathayastan.online' });
 
 const register_error = (dest_phone_number, error) =>
   new Promise(resolve => {
@@ -117,7 +117,7 @@ const send_failure = (response, reason) =>
 
 // From the site sign up, with the cors middleware, important to never do .end
 exports.subscribe = functions.https.onRequest((request, response) => {
-  cors(request, response, () => {
+  return cors(request, response, () => {
     const { phone_number: unformatted_phone_number } = request.body;
     const is_not_well_formatted = is_bad_phone_number_candidate(unformatted_phone_number);
     if (is_not_well_formatted) {
@@ -127,7 +127,8 @@ exports.subscribe = functions.https.onRequest((request, response) => {
     return check_if_user_already_exists(phone_number)
       .then(({ user_already_exists, user }) => {
         if (user_already_exists) {
-          return send_failure(response, 'Հեռախոսահամարը արդեն գրանցված է');
+          send_failure(response, 'Հեռախոսահամարը արդեն գրանցված է');
+          throw new Error(`${phone_number} already had account`);
         } else {
           return persist_new_user({ phone_number });
         }
@@ -139,11 +140,13 @@ exports.subscribe = functions.https.onRequest((request, response) => {
           client,
           dest_phone_number: phone_number,
           message: `
-Welcome to my direct line, you will get news and updates from this number --Nikol Pashinyan
+Welcome to my direct line, you will get news and updates from this number --Nikol Pashinyan 🇦🇲
 `,
         });
       })
       .then(() => response.send(JSON.stringify({ result: 'success' })))
-      .catch(register_error);
+      .catch(error => {
+        console.error(`${error.message}`);
+      });
   });
 });
