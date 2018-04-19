@@ -131,7 +131,7 @@ exports.subscribe = functions.https.onRequest((request, response) => {
       response.send(
         JSON.stringify({ result: 'failure', reason: 'Only Armenian numbers accepted' })
       );
-      throw new Error(`Non Armenian mobile phone provided`);
+      console.info({ msg: `Non Armenian mobile phone provided`, phone_number });
     }
     return check_if_user_already_exists(phone_number)
       .then(({ user_already_exists, user }) => {
