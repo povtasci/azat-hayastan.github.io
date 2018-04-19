@@ -1,8 +1,7 @@
 module.exports = {
   db_paths: {
-    all_phone_numbers_ref_path: 'all-phone-numbers',
-    subscription_based_signups: 'subscription_based_signups',
+    subscription_based_signups: 'subscription-based-signups',
   },
   result: { success: 'success', failure: 'failure' },
-  is_phone_number: phone_number => /^[\d+\-() ]+$/.test(phone_number),
+  is_armenian_phone_number: phone_number => /^(?:\+|00)374[0-9]{8}$/.test(phone_number),
 };
